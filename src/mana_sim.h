@@ -34,7 +34,6 @@ double manaSpent(DeckHand deck_hand, int max_turns, std::mt19937& gen){
 		for(int try_to_spend = most_try_spend; try_to_spend > 0; try_to_spend--){
 			for(auto way_to_spend : partitions<uint8_t, 8>(try_to_spend)){
 				if(deck_hand.try_play(way_to_spend)){
-					cumulative_mana += (onboard_value + try_to_spend);
 					onboard_value += try_to_spend;
 					//mana_spent += ((double)try_to_spend/(double)turn);
 					turn_mana -= try_to_spend;
@@ -44,6 +43,8 @@ double manaSpent(DeckHand deck_hand, int max_turns, std::mt19937& gen){
 
 			if(turn_mana == 0){break;}
 		}
+
+		cumulative_mana += onboard_value;
 	}
 	
 	return cumulative_mana;

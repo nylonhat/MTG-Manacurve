@@ -32,7 +32,7 @@ struct Deck {
 template<>
 struct std::hash<Deck>{
 	std::size_t operator()(const Deck& deck) const{
-		return *reinterpret_cast<const uint64_t*>(deck.curve.data());
+		return std::bit_cast<size_t>(deck.curve.data());
 	}
 };
 
