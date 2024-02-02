@@ -17,7 +17,7 @@
 #include "mana_sim.h"
 
 struct SearchSystem {
-	Threadpool threadpool = Threadpool(4);
+	Threadpool threadpool = Threadpool(16);
 
 	struct SearchResult {
 		Deck deck = {};
@@ -108,7 +108,7 @@ struct SearchSystem {
 	}
 
 	Sync<int> entry(){
-		Deck deck = {26,3,10,10,7,4,0,0};
+		Deck deck = {26,0,10,12,8,4,0,0};
 		co_await hillclimbSearch(deck);
 		co_return 0;
 	}

@@ -11,12 +11,17 @@ double manaSpent(DeckHand deck_hand, int max_turns, std::mt19937& gen){
 	//double mana_spent = 0;	
 	int max_mana = 0;
 
+	std::uniform_int_distribution<int> coin_flip(0,1);
+	
 	for(int turn = 1; turn <= max_turns; turn++){
 		//draw for turn
 		if(turn != 1){
-			deck_hand.draw(gen);
+			deck_hand.draw(gen);	
 		}
 
+		else if(coin_flip(gen)){
+			deck_hand.draw(gen);	
+		}
 
 		//play land for turn
 		std::array<uint8_t, 8> land_for_turn = {1,0,0,0,0,0,0,0};
