@@ -4,7 +4,8 @@
 #include "mulligan.h"
 #include "mana_sim.h"
 
-MulliganStrategy optimalMulliganStrategy(Deck deck, int max_turns, std::mt19937& gen){
+MulliganStrategy optimalMulliganStrategy(const Deck deck, std::mt19937& gen, SimSettings settings){
+
 	MulliganStrategy strat = {};
 
 	std::array<uint8_t, 8> min = {0,0,0,0,0,0,0,0};
@@ -23,7 +24,7 @@ MulliganStrategy optimalMulliganStrategy(Deck deck, int max_turns, std::mt19937&
 				std::ranges::transform(deck.curve, opening_curve, deck_hand.deck.curve.begin(), std::minus{});
 				deck_hand.hand.curve = opening_curve;
 				deck_hand.try_play(to_bottom_curve);
-				double avg_mana = avgManaSpentSpecific(deck_hand, max_turns, 10000, gen);
+				double avg_mana = avgManaSpentSpecific(deck_hand, gen, settings);
 				if(avg_mana >= best_mana_spent){
 					best_mana_spent = avg_mana;
 					best_to_bottom = to_bottom_curve;
@@ -38,7 +39,7 @@ MulliganStrategy optimalMulliganStrategy(Deck deck, int max_turns, std::mt19937&
 			
 		//test with this hand size
 		if(hand_size == 7){break;}
-		avg_mana_next_mull = avgManaSpentGeneral(deck, strat, max_turns, 1000000, gen, hand_size);
+		avg_mana_next_mull = avgManaSpentGeneral(deck, strat, gen, settings, hand_size);
 		//std::cout << avg_mana_next_mull << "\n";
 	}
 	

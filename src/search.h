@@ -24,15 +24,35 @@ struct SearchSystem {
 		double mana;
 	};
 
-	Task<SearchResult> deckSim(Deck deck){
+	Task<SearchResult> deckSim(const Deck deck, SimSettings settings){
 		std::mt19937 gen(std::random_device{}());
-		auto strat = optimalMulliganStrategy(deck, 7, gen);
-		auto mana = avgManaSpentGeneral(deck, strat, 7, 1'000'000, gen);
-		co_return {deck, mana};	
+		const auto play_order = settings.play_order;
+
+		if(play_order == PlayOrder::Random){
+			settings.general_iterations = settings.general_iterations / 2;
+
+			settings.play_order = PlayOrder::Play;
+			auto strat_play = optimalMulliganStrategy(deck, gen, settings);
+			auto mana_play = avgManaSpentGeneral(deck, strat_play, gen, settings);
+
+			settings.play_order = PlayOrder::Draw;
+			auto strat_draw = optimalMulliganStrategy(deck, gen, settings);
+			auto mana_draw = avgManaSpentGeneral(deck, strat_draw, gen, settings);
+			
+			double avg_mana = (mana_play + mana_draw) / 2;
+			co_return {deck, avg_mana};
+
+		}
+
+		else{
+			auto strat = optimalMulliganStrategy(deck, gen, settings);
+			auto mana = avgManaSpentGeneral(deck, strat, gen, settings);
+			co_return {deck, mana};	
+		}
 	}
 
 
-	Task<Deck> hillclimbSearch(Deck init_deck){
+	Task<Deck> hillclimbSearch(const Deck init_deck, SimSettings settings){
 		auto plus_one = [](auto i){return i+1;};
 		auto minus_one = [](auto i){return std::max(0,i-1);};
 
@@ -69,7 +89,7 @@ struct SearchSystem {
 				Deck deck = {neighbour};
 				if(searched_decks.contains(deck)){continue;}
 
-				auto recycled_slot = recycler.emplace(co_await threadpool.branch(deckSim(deck)));
+				auto recycled_slot = recycler.emplace(co_await threadpool.branch(deckSim(deck, settings)));
 				if(recycled_slot.index() != 1){
 					continue;
 				}
@@ -103,13 +123,23 @@ struct SearchSystem {
 			}
 
 		}
-		std::cout << "Best: " << best_deck << " " << best_mana << "\n";
+		std::cout << "Best: " << best_deck << " mana: " << best_mana << "\n";
 		co_return best_deck;
 	}
 
 	Sync<int> entry(){
-		Deck deck = {26,0,10,12,8,4,0,0};
-		co_await hillclimbSearch(deck);
+		Deck deck = {24,10,13,11,2,0,0,0};
+		
+		SimSettings settings = {
+			.max_turns = 7,
+			.play_order = PlayOrder::Random
+		};
+
+		co_await hillclimbSearch(deck, settings);
+
+		//std::mt19937 gen(std::random_device{}());
+		//auto strat = optimalMulliganStrategy(deck, 5, gen);
+		//std::cout << strat << "\n";
 		co_return 0;
 	}
 };

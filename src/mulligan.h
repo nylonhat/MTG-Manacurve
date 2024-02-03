@@ -51,6 +51,13 @@ struct MulliganStrategy {
 	std::unordered_map<HandToMulligan, MulliganChoice> map = {};	
 };
 
+std::ostream& operator<< (std::ostream& os, const MulliganStrategy& strat){
+	for(auto [hand, choice] : strat.map){
+		std::cout << hand << "  " << choice << "\n";
+	}
+	return os;
+}
+
 DeckHand initWithMulligan(Deck deck, MulliganStrategy& strat, std::mt19937& gen, uint8_t max_hand_size = 7){
 	for(uint8_t start_hand_size = max_hand_size; start_hand_size > 0; start_hand_size--){
 		DeckHand deck_hand = {deck,{}};
